@@ -38,9 +38,27 @@ npm install
 Create a `.env` file in the root directory:
 
 ```env
+# Server Configuration
 PORT=3000
-JWT_SECRET=your_secret_key
-JWT_EXPIRES_IN=1h
+NODE_ENV=development
+
+# Supabase Database Configuration
+DB_HOST=db.[your-project-ref].supabase.co
+DB_PORT=5432
+DB_NAME=postgres
+DB_USER=postgres
+DB_PASS=[your-supabase-database-password]
+
+# Alternative: You can also use the full connection string
+# DATABASE_URL=postgresql://postgres:[YOUR-PASSWORD]@db.[your-project-ref].supabase.co:5432/postgres
+
+# JWT Configuration
+JWT_SECRET=[your-generated-jwt-secret-key]
+JWT_EXPIRES_IN=7d
+
+# Optional: Frontend URL for CORS
+FRONTEND_URL=http://localhost:3000
+
 ```
 
 ---
