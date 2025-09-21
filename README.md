@@ -95,14 +95,21 @@ Response:
 
 ```json
 {
-  "message": "User registered successfully",
-  "user": {
-    "id": 1,
-    "username": "staff2",
-    "email": "staff2@example.com",
-    "role": "staff"
-  }
+    "success": true,
+    "message": "User registered successfully",
+    "data": {
+        "user": {
+            "id": "64d594df-34e6-4d93-85c3-d7f091d92f20",
+            "username": "staff2",
+            "email": "staff2@example.com",
+            "role": "staff",
+            "updatedAt": "2025-09-21T03:36:06.690Z",
+            "createdAt": "2025-09-21T03:36:06.690Z"
+        },
+        "token": "jwt_token_here"
+    }
 }
+
 ```
 
 ---
@@ -124,35 +131,25 @@ Response:
 
 ```json
 {
-  "message": "Login successful",
-  "token": "jwt_token_here"
+    "success": true,
+    "message": "Login successful",
+    "data": {
+        "user": {
+            "id": "0f4293b4-828f-4fe9-83a0-dde4e4ebd643",
+            "username": "staff",
+            "email": "staff@example.com",
+            "role": "staff",
+            "createdAt": "2025-09-19T16:45:39.402Z",
+            "updatedAt": "2025-09-19T16:45:39.402Z"
+        },
+        "token": "jwt_token_here"
+    }
 }
+
 ```
 
 ---
 
-### 3. Protected Route
-
-**GET** `/api/protected`
-
-Headers:
-
-```
-Authorization: Bearer <your_jwt_token>
-```
-
-Response:
-
-```json
-{
-  "message": "Welcome to the protected route!",
-  "user": {
-    "id": 1,
-    "username": "staff2",
-    "role": "staff"
-  }
-}
-```
 
 ---
 
