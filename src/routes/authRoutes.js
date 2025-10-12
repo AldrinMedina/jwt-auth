@@ -14,6 +14,7 @@ const {
    register,
    login,
    getProfile,
+   updateUser,
 } = require("../controllers/authController"); // Controller functions for authentication
 const { authenticateToken } = require("../middleware/auth"); // Middleware for JWT authentication
 
@@ -48,6 +49,9 @@ router.post("/login", login);
 * @access  Private (requires valid authentication)
 */
 router.get("/profile", authenticateToken, getProfile);
+
+router.put("/users/:id", authenticateToken, updateUser);
+
 
 // Export router to be mounted in app.js
 module.exports = router;

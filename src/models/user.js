@@ -100,13 +100,13 @@ module.exports = (sequelize, DataTypes) => {
 
       // User role (restricted to admin, manager, or staff)
       role: {
-        type: DataTypes.ENUM("admin", "manager", "staff"),
+        type: DataTypes.ENUM("admin", "doctor", "staff", "patient"),
         allowNull: false,
         defaultValue: "staff", // Default role for new users
         validate: {
           isIn: {
-            args: [["admin", "manager", "staff"]],
-            msg: "Role must be admin, manager, or staff",
+            args: [["admin", "doctor", "staff", "patient"]],
+            msg: "Role must be admin, doctor, staff, or patient",
           },
         },
       },

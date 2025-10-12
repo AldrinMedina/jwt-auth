@@ -63,9 +63,7 @@ const getAllUsers = async (req, res) => {
    // Send response with sanitized users (passwords removed in toJSON)
    res.json({
      success: true,
-     data: {
-       users: users.map((user) => user.toJSON()), // Ensure password is removed
-     },
+     data: users.map((user) => user.toJSON()), // Ensure password is removed
    });
  } catch (error) {
    console.error("Get all users error:", error);

@@ -196,8 +196,86 @@ const getProfile = async (req, res) => {
  }
 };
 
+/**
+ * Controller: Update User
+ * ----------------------------------------------------
+ * - Admins can update any user (including role)
+ * - Regular users can only update their own profile
+ * - Password update is optional (hashing handled by model hook)
+ *
+ * @route PUT /api/users/:id
+ * @access Private (Admin or Self)
+ */
+const updateUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { username, email, password, role } = req.body;
+
+    // Find the user by ID
+    const user = await User.findByPk(id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Check permission: Admins can edit anyone, 
+    // normal users can only edit themselves (and not their role)
+    if (req.user.role !== "admin" && req.user.id !== parseInt(id)) {
+      return res.status(403).json({
+        success: false,
+        message: "Unauthorized to update this user",
+      });
+    }
+
+    // Update fields if provided
+    if (username) user.username = username;
+    if (email) user.email = email;
+    if (password) user.password = password; // will be hashed by model hook
+    if (req.user.role === "admin" && role) {
+      user.role = role; // only admins can change roles
+    }
+
+    await user.save();
+
+    res.json({
+      success: true,
+      message: "User updated successfully",
+      data: {
+        user: user.toJSON(),
+      },
+    });
+  } catch (error) {
+    console.error("Update user error:", error);
+
+    if (error.name === "SequelizeValidationError") {
+      const messages = error.errors.map((err) => err.message);
+      return res.status(400).json({
+        success: false,
+        message: "Validation failed",
+        errors: messages,
+      });
+    }
+
+    if (error.name === "SequelizeUniqueConstraintError") {
+      const field = error.errors[0].path;
+      return res.status(400).json({
+        success: false,
+        message: `${field} already exists`,
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
 module.exports = {
  register,
  login,
  getProfile,
+ updateUser,
 };

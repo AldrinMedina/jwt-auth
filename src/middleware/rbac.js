@@ -58,13 +58,14 @@ const requireRole = (allowedRoles) => {
 * These are shortcuts for common role combinations
 */
 const requireAdmin = requireRole(["admin"]); // Only admins can access
-const requireManager = requireRole(["admin", "manager"]); // Admins and managers
-const requireStaff = requireRole(["admin", "manager", "staff"]); // Admins, managers, and staff
-
+const requireManager = requireRole(["admin", "doctor"]); // Admins and managers
+const requireStaff = requireRole(["admin", "doctor", "staff"]); // Admins, managers, and staff
+const requirePatient = requireRole(["admin", "doctor", "staff", "patient"]); // All roles
 // Export all middlewares so they can be used in route files
 module.exports = {
  requireRole,
  requireAdmin,
  requireManager,
  requireStaff,
+ requirePatient,
 };

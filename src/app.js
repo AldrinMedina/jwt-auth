@@ -23,6 +23,7 @@ require("dotenv").config(); // Loads environment variables from a .env file
 // Import route files
 const authRoutes = require("./routes/authRoutes");
 const adminRoutes = require("./routes/adminRoutes");
+const medicineRoutes = require("./routes/medicineRoutes");
 
 // Import database models (sequelize models are initialized here)
 const db = require("./models");
@@ -37,7 +38,7 @@ app.use(helmet()); // Adds various HTTP headers for better security
 // CORS configuration - allows frontend app to access this backend API
 app.use(
  cors({
-   origin: process.env.FRONTEND_URL || "http://localhost:3000", // Allowed frontend origin
+   origin: process.env.FRONTEND_URL || "http://localhost:3001", // Allowed frontend origin
    credentials: true, // Allow cookies and authentication headers
  }),
 );
@@ -56,6 +57,9 @@ app.use("/api/auth", authRoutes);
 
 // Admin routes (e.g., user management, dashboard)
 app.use("/api/admin", adminRoutes);
+
+// Medicine routes (e.g., CRUD operations for medicines)
+app.use("/api/medicines", medicineRoutes);
 
 // Health check endpoint
 // Used to verify if the server is running and reachable
