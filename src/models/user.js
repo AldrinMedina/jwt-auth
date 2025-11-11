@@ -110,6 +110,17 @@ module.exports = (sequelize, DataTypes) => {
           },
         },
       },
+
+      // in models/User.js
+      resetPasswordToken: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      resetPasswordExpires: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
+
     },
     {
       sequelize, // Sequelize instance
@@ -130,6 +141,7 @@ module.exports = (sequelize, DataTypes) => {
          * Hash password before updating user (if password changed).
          */
         beforeUpdate: async (user) => {
+          console.log("Running beforeUpdate hook for:", user.email); // 🟢 debug log
           if (user.changed("password")) {
             const salt = await bcrypt.genSalt(10);
             user.password = await bcrypt.hash(user.password, salt);

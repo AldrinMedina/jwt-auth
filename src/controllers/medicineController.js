@@ -3,7 +3,7 @@ const { Medicine } = require("../models");
 // Create new medicine (admin, doctor)
 const createMedicine = async (req, res) => {
   try {
-    const { name, quantity, expiryDate, description, createdby } = req.body;
+    const { name, quantity, expiryDate, description, createdBy } = req.body;
 
     if (!name || !expiryDate) {
       return res.status(400).json({

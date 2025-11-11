@@ -1,5 +1,8 @@
 const jwt = require("jsonwebtoken");
 const { User } = require("../models");
+const { Op } = require("sequelize");
+const crypto = require("crypto");
+const nodemailer = require("nodemailer");
 
 /**
 * Utility: Generate JWT token for a user
@@ -273,9 +276,105 @@ const updateUser = async (req, res) => {
   }
 };
 
+const resetPassword = async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+
+    if (!token || !newPassword) {
+      return res.status(400).json({ success: false, message: "Token and new password are required" });
+    }
+
+    console.log("Reset request received for token:", token); // 🟡 debug
+
+    const user = await User.findOne({
+      where: {
+        resetPasswordToken: token,
+        resetPasswordExpires: { [Op.gt]: Date.now() },
+      },
+    });
+
+    if (!user) {
+      console.log("❌ Invalid or expired token");
+      return res.status(400).json({ success: false, message: "Invalid or expired token" });
+    }
+
+    console.log("✅ Found user:", user.email);
+
+    // Force Sequelize to detect the change
+    user.setDataValue("password", newPassword);
+    user.changed("password", true);
+
+    user.resetPasswordToken = null;
+    user.resetPasswordExpires = null;
+
+    console.log("💾 Saving user with new password...");
+    await user.save({ individualHooks: true });
+    console.log("✅ User saved successfully!");
+
+    res.json({ success: true, message: "Password reset successful" });
+  } catch (error) {
+    console.error("❌ Reset password error:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ success: false, message: "Email is required" });
+    }
+
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "No account with that email" });
+    }
+
+    // Generate a reset token (random string)
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    const resetTokenExpiry = Date.now() + 3600000; // 1 hour
+
+    // Save to database
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpires = resetTokenExpiry;
+    await user.save();
+
+    // Email setup (use your SMTP settings)
+    const transporter = nodemailer.createTransport({
+      service: "gmail", // or your email service
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    // Send email with reset link
+    const resetURL = `${process.env.FRONTEND_URL}/reset_password?token=${resetToken}`;
+    await transporter.sendMail({
+      to: user.email,
+      from: process.env.EMAIL_USER,
+      subject: "Password Reset Request",
+      html: `
+        <h3>Hello ${user.username},</h3>
+        <p>You requested to reset your password.</p>
+        <p>Click the link below to set a new password:</p>
+        <a href="${resetURL}">${resetURL}</a>
+        <p>This link expires in 1 hour.</p>
+      `,
+    });
+
+    res.json({ success: true, message: "Password reset email sent" });
+  } catch (error) {
+    console.error("Forgot password error:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
 module.exports = {
  register,
  login,
  getProfile,
  updateUser,
+ forgotPassword,
+ resetPassword, 
 };
