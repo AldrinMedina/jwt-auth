@@ -66,16 +66,18 @@ app.use(helmet()); // Adds various HTTP headers for better security
 app.use(
   cors({
     origin: [
-      "https://medicine-inventory-xdzx.vercel.app",
-      "http://localhost:3001"
+      "https://medicine-inventory-xdzx.vercel.app", // your frontend
+      "http://localhost:3001" // local development (optional)
     ],
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   })
 );
-// app.use(cors(...));
+
+// Required on Vercel for OPTIONS preflight
 app.options("*", cors());
+
 
 
 
