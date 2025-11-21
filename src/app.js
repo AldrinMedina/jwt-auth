@@ -57,13 +57,13 @@ app.use((req, res, next) => {
     );
   }
 
-  // OPTIONS preflight
   if (req.method === "OPTIONS") {
     return res.status(200).end();
   }
 
   next();
 });
+
 
 
 // Logging middleware
@@ -76,17 +76,17 @@ app.use(express.urlencoded({ extended: true })); // Parse URL-encoded request bo
 // ---------------------- Routes ----------------------
 
 // Authentication routes (e.g., login, register, refresh token)
-app.use("/api/auth", authRoutes);
+app.use("/auth", authRoutes);
 
 // Admin routes (e.g., user management, dashboard)
-app.use("/api/admin", adminRoutes);
+app.use("/admin", adminRoutes);
 
 // Medicine routes (e.g., CRUD operations for medicines)
-app.use("/api/medicines", medicineRoutes);
+app.use("/medicines", medicineRoutes);
 
 // Health check endpoint
 // Used to verify if the server is running and reachable
-app.get("/api/health", (req, res) => {
+app.get("/health", (req, res) => {
  res.json({
    success: true,
    message: "Server is running",
@@ -118,6 +118,4 @@ app.use((err, req, res, next) => {
 
 // Export app for server.js or testing purposes
 module.exports = app;
-module.exports.config = {
-  runtime: "nodejs18.x",
-}
+
