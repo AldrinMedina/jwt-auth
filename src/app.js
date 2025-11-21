@@ -37,13 +37,12 @@ app.use(helmet()); // Adds various HTTP headers for better security
 
 // CORS configuration - allows frontend app to access this backend API
 
-const allowedOrigins = [
-  process.env.FRONTEND_URL,
-  "http://localhost:3000",
-  "http://localhost:3001"
-];
-
 app.use((req, res, next) => {
+  const allowedOrigins = [
+    process.env.FRONTEND_URL,
+    "http://localhost:3000",
+    "http://localhost:3001",
+  ];
   const origin = req.headers.origin;
   if (allowedOrigins.includes(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
@@ -58,13 +57,14 @@ app.use((req, res, next) => {
     );
   }
 
-  // Handle preflight requests
+  // OPTIONS preflight
   if (req.method === "OPTIONS") {
-    return res.sendStatus(200);
+    return res.status(200).end();
   }
 
   next();
 });
+
 
 // Logging middleware
 app.use(morgan("combined")); // Logs HTTP requests in Apache combined format
