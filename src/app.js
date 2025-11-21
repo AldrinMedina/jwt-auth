@@ -66,13 +66,6 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(
- cors({
-   origin: process.env.FRONTEND_URL || "https://medicine-inventory-xdzx.vercel.app", // Allowed frontend origin
-   credentials: true, // Allow cookies and authentication headers
- }),
-);
-
 // Logging middleware
 app.use(morgan("combined")); // Logs HTTP requests in Apache combined format
 
