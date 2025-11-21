@@ -95,3 +95,6 @@ app.use((err, req, res, next) => {
 
 // Export app for server.js or testing purposes
 module.exports = app;
+module.exports.config = {
+  runtime: "nodejs18.x",
+}
