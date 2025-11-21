@@ -35,11 +35,11 @@ const startServer = async () => {
    }
 
    // ✅ Start Express server
-   app.listen(PORT, () => {
-     console.log(`🚀 Server is running on port ${PORT}`);
-     console.log(`🔗 API Health Check: http://localhost:${PORT}/api/health`);
-     console.log(`📊 Environment: ${process.env.NODE_ENV || "development"}`);
-   });
+    if (!process.env.VERCEL) {
+      app.listen(PORT, () => {
+        console.log(`🚀 Server running on http://localhost:${PORT}`);
+      });
+    }
  } catch (error) {
    // ❌ Handle startup errors (e.g., DB connection failed)
    console.error("❌ Unable to start server:", error);
@@ -53,17 +53,19 @@ const startServer = async () => {
 * Ensures database connections are closed properly when the server
 * receives termination signals (e.g., Ctrl+C or Kubernetes shutdown).
 */
-process.on("SIGTERM", async () => {
- console.log("🛑 SIGTERM received, shutting down gracefully...");
- await db.sequelize.close(); // Close DB connection
- process.exit(0); // Exit cleanly
-});
+// process.on("SIGTERM", async () => {
+//  console.log("🛑 SIGTERM received, shutting down gracefully...");
+//  await db.sequelize.close(); // Close DB connection
+//  process.exit(0); // Exit cleanly
+// });
 
-process.on("SIGINT", async () => {
- console.log("🛑 SIGINT received (Ctrl+C), shutting down gracefully...");
- await db.sequelize.close(); // Close DB connection
- process.exit(0); // Exit cleanly
-});
+// process.on("SIGINT", async () => {
+//  console.log("🛑 SIGINT received (Ctrl+C), shutting down gracefully...");
+//  await db.sequelize.close(); // Close DB connection
+//  process.exit(0); // Exit cleanly
+// });
 
 // ✅ Initialize server
 startServer();
+
+module.exports = app; // Export app for testing or serverless deployment
