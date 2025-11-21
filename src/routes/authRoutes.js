@@ -12,6 +12,7 @@
 const express = require("express");
 const {
    register,
+   adminCreateUser,
    login,
    getProfile,
    updateUser,
@@ -33,6 +34,7 @@ const router = express.Router(); // Initialize Express Router
 * @access  Public (no authentication required)
 */
 router.post("/register", register);
+router.post("/admin/create-user", authenticateToken, adminCreateUser);
 
 /**
 * @route   POST /api/auth/login

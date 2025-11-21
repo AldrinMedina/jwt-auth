@@ -101,6 +101,97 @@ const register = async (req, res) => {
 };
 
 /**
+ * Controller: Admin Create User (Auto-Generates Password)
+ * ---------------------------------------------------------
+ * - Only admins can use this
+ * - Generates a secure random password
+ * - Hashing handled by Sequelize model hook
+ * - Sends password to user's email
+ *
+ * @route POST /api/admin/users
+ * @access Admin
+ */
+const adminCreateUser = async (req, res) => {
+  try {
+    if (req.user.role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "Only admins can create users",
+      });
+    }
+
+    const { username, email, role } = req.body;
+
+    if (!username || !email) {
+      return res.status(400).json({
+        success: false,
+        message: "Username and email are required",
+      });
+    }
+
+    // Generate secure password
+    const generatedPassword = crypto.randomBytes(8).toString("hex"); 
+    // Example: 'a7f39bd912e0c8f1'
+
+    // Create the user (model hook will hash password)
+    const newUser = await User.create({
+      username,
+      email,
+      password: generatedPassword,
+      role: role || "staff",
+    });
+
+    // Send email with the generated password
+    const transporter = nodemailer.createTransport({
+      service: "gmail", // adjust if using a custom SMTP
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    const emailHTML = `
+      <h2>Welcome, ${username}!</h2>
+      <p>Your new account has been created.</p>
+
+      <p><strong>Login Email/Username:</strong> ${email}</p>
+      <p><strong>Temporary Password:</strong> ${generatedPassword}</p>
+
+      <p>Please log in and change your password immediately.</p>
+    `;
+
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Your New Account Credentials",
+      html: emailHTML,
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "User created successfully — credentials sent via email",
+      data: newUser.toJSON(),
+    });
+
+  } catch (error) {
+    console.error("Admin create user error:", error);
+
+    if (error.name === "SequelizeUniqueConstraintError") {
+      return res.status(400).json({
+        success: false,
+        message: `${error.errors[0].path} already exists`,
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+
+/**
 * Controller: Login user
 * ----------------------------------------------------
 * - Validates input (email + password required)
@@ -113,19 +204,24 @@ const register = async (req, res) => {
 */
 const login = async (req, res) => {
  try {
-   const { email, password } = req.body;
+   const { identifier, password } = req.body;
 
    // Check if required fields are provided
-   if (!email || !password) {
+   if (!identifier || !password) {
      return res.status(400).json({
        success: false,
-       message: "Email and password are required",
+       message: "Email/Username and password are required",
      });
    }
 
    // Find user by email (include password for validation)
    const user = await User.findOne({
-     where: { email },
+     where: { 
+       [Op.or]: [
+        { email: identifier }, 
+        { username: identifier }
+       ]
+      },
      attributes: [
        "id",
        "username",
@@ -140,7 +236,7 @@ const login = async (req, res) => {
    if (!user) {
      return res.status(401).json({
        success: false,
-       message: "Invalid email or password",
+       message: "Invalid email/username or password",
      });
    }
 
@@ -149,7 +245,7 @@ const login = async (req, res) => {
    if (!isValidPassword) {
      return res.status(401).json({
        success: false,
-       message: "Invalid email or password",
+       message: "Invalid email/username or password",
      });
    }
 
@@ -372,6 +468,7 @@ const forgotPassword = async (req, res) => {
 
 module.exports = {
  register,
+ adminCreateUser, 
  login,
  getProfile,
  updateUser,

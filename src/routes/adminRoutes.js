@@ -15,6 +15,8 @@ const {
    getAllUsers,
    deleteUser,
 } = require("../controllers/adminController"); // Controller functions for admin features
+const { getRecentActivities } = require("../controllers/recentActivities"); // Controller for recent activities
+
 const { authenticateToken } = require("../middleware/auth"); // Middleware for JWT authentication
 const { requireAdmin } = require("../middleware/rbac"); // Middleware to enforce admin role
 
@@ -53,6 +55,9 @@ router.get("/users", getAllUsers);
 * @access  Private (Admin only)
 */
 router.delete("/users/:userId", deleteUser);
+
+router.get("/recent-activities", getRecentActivities);
+
 
 // Export the router for use in app.js
 module.exports = router;

@@ -20,6 +20,6 @@ router.post("/", authenticateToken, requireRole(["admin", "doctor"]), createMedi
 router.put("/:id", authenticateToken, requireRole(["admin", "doctor"]), updateMedicine);
 
 // Admin-only: delete medicine
-router.delete("/:id", authenticateToken, requireRole(["admin"]), deleteMedicine);
+router.delete("/:id", authenticateToken, requireRole(["admin", "doctor"]), deleteMedicine);
 
 module.exports = router;
