@@ -37,32 +37,45 @@ app.use(helmet()); // Adds various HTTP headers for better security
 
 // CORS configuration - allows frontend app to access this backend API
 
-app.use((req, res, next) => {
-  const allowedOrigins = [
-    process.env.FRONTEND_URL,
-    "http://localhost:3000",
-    "http://localhost:3001",
-  ];
-  const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader("Access-Control-Allow-Origin", origin);
-    res.setHeader("Access-Control-Allow-Credentials", "true");
-    res.setHeader(
-      "Access-Control-Allow-Methods",
-      "GET, POST, PUT, DELETE, OPTIONS"
-    );
-    res.setHeader(
-      "Access-Control-Allow-Headers",
-      "Origin, X-Requested-With, Content-Type, Accept, Authorization"
-    );
-  }
+// app.use((req, res, next) => {
+//   const allowedOrigins = [
+//     process.env.FRONTEND_URL,
+//     "http://localhost:3000",
+//     "http://localhost:3001",
+//   ];
+//   const origin = req.headers.origin;
+//   if (allowedOrigins.includes(origin)) {
+//     res.setHeader("Access-Control-Allow-Origin", origin);
+//     res.setHeader("Access-Control-Allow-Credentials", "true");
+//     res.setHeader(
+//       "Access-Control-Allow-Methods",
+//       "GET, POST, PUT, DELETE, OPTIONS"
+//     );
+//     res.setHeader(
+//       "Access-Control-Allow-Headers",
+//       "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+//     );
+//   }
 
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
-  }
+//   if (req.method === "OPTIONS") {
+//     return res.status(200).end();
+//   }
 
-  next();
-});
+//   next();
+// });
+app.use(
+  cors({
+    origin: [
+      "https://medicine-inventory-xdzx.vercel.app",
+      "http://localhost:3001"
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  })
+);
+// app.use(cors(...));
+app.options("*", cors());
 
 
 
