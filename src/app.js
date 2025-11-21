@@ -38,7 +38,7 @@ app.use(helmet()); // Adds various HTTP headers for better security
 // CORS configuration - allows frontend app to access this backend API
 app.use(
  cors({
-   origin: process.env.FRONTEND_URL || "http://localhost:3001", // Allowed frontend origin
+   origin: process.env.FRONTEND_URL || "https://medicine-inventory-xdzx.vercel.app", // Allowed frontend origin
    credentials: true, // Allow cookies and authentication headers
  }),
 );
