@@ -89,17 +89,17 @@ app.use(express.urlencoded({ extended: true })); // Parse URL-encoded request bo
 // ---------------------- Routes ----------------------
 
 // Authentication routes (e.g., login, register, refresh token)
-app.use("/auth", authRoutes);
+app.use("/api/auth", authRoutes);
 
 // Admin routes (e.g., user management, dashboard)
-app.use("/admin", adminRoutes);
+app.use("/api/admin", adminRoutes);
 
 // Medicine routes (e.g., CRUD operations for medicines)
-app.use("/medicines", medicineRoutes);
+app.use("/api/medicines", medicineRoutes);
 
 // Health check endpoint
 // Used to verify if the server is running and reachable
-app.get("/health", (req, res) => {
+app.get("/api/health", (req, res) => {
  res.json({
    success: true,
    message: "Server is running",
