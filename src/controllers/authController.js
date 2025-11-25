@@ -3,6 +3,9 @@ const { User } = require("../models");
 const { Op } = require("sequelize");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
+const sgMail = require("@sendgrid/mail");
+
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 /**
 * Utility: Generate JWT token for a user
@@ -142,35 +145,60 @@ const adminCreateUser = async (req, res) => {
     });
 
     // Send email with the generated password
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT),
-      secure: process.env.SMTP_SECURE === "true",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-      tls: {
-        rejectUnauthorized: false,
-      },
-    });
+    // const transporter = nodemailer.createTransport({
+    //   host: process.env.SMTP_HOST,
+    //   port: Number(process.env.SMTP_PORT),
+    //   secure: process.env.SMTP_SECURE === "true",
+    //   auth: {
+    //     user: process.env.EMAIL_USER,
+    //     pass: process.env.EMAIL_PASS,
+    //   },
+    //   tls: {
+    //     rejectUnauthorized: false,
+    //   },
+    // });
+
+    // const emailHTML = `
+    //   <h2>Welcome, ${username}!</h2>
+    //   <p>Your new account has been created.</p>
+
+    //   <p><strong>Login Email/Username:</strong> ${email}</p>
+    //   <p><strong>Temporary Password:</strong> ${generatedPassword}</p>
+
+    //   <p>Please log in and change your password immediately.</p>
+    // `;
+
+    // await transporter.sendMail({
+    //   from: process.env.EMAIL_USER,
+    //   to: email,
+    //   subject: "Your New Account Credentials",
+    //   html: emailHTML,
+    // });
 
     const emailHTML = `
       <h2>Welcome, ${username}!</h2>
       <p>Your new account has been created.</p>
-
       <p><strong>Login Email/Username:</strong> ${email}</p>
       <p><strong>Temporary Password:</strong> ${generatedPassword}</p>
-
       <p>Please log in and change your password immediately.</p>
     `;
 
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: "Your New Account Credentials",
-      html: emailHTML,
-    });
+    try {
+      await sgMail.send({
+        to: email,
+        from: process.env.EMAIL_FROM,
+        subject: "Your New Account Credentials",
+        html: emailHTML,
+      });
+    } catch (err) {
+      console.error("SendGrid error:", err);
+      return res.status(500).json({
+        success: false,
+        message: "User created but failed to send email. Please check the email settings.",
+      });
+    }
+
+
 
     res.status(201).json({
       success: true,
@@ -440,34 +468,42 @@ const forgotPassword = async (req, res) => {
     user.resetPasswordExpires = resetTokenExpiry;
     await user.save();
 
-    // Email setup (use your SMTP settings)
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT),
-      secure: process.env.SMTP_SECURE === "true",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-      tls: {
-        rejectUnauthorized: false,
-      },
-    });
+    // // Email setup (use your SMTP settings)
+    // const transporter = nodemailer.createTransport({
+    //   host: process.env.SMTP_HOST,
+    //   port: Number(process.env.SMTP_PORT),
+    //   secure: process.env.SMTP_SECURE === "true",
+    //   auth: {
+    //     user: process.env.EMAIL_USER,
+    //     pass: process.env.EMAIL_PASS,
+    //   },
+    //   tls: {
+    //     rejectUnauthorized: false,
+    //   },
+    // });
 
     // Send email with reset link
     const resetURL = `${process.env.FRONTEND_URL}/reset_password?token=${resetToken}`;
-    await transporter.sendMail({
-      to: user.email,
-      from: process.env.EMAIL_USER,
-      subject: "Password Reset Request",
-      html: `
-        <h3>Hello ${user.username},</h3>
-        <p>You requested to reset your password.</p>
-        <p>Click the link below to set a new password:</p>
-        <a href="${resetURL}">${resetURL}</a>
-        <p>This link expires in 1 hour.</p>
-      `,
-    });
+    try {
+      await sgMail.send({
+        to: user.email,
+        from: process.env.EMAIL_FROM, // verified sender
+        subject: "Password Reset Request",
+        html: `
+          <h3>Hello ${user.username},</h3>
+          <p>You requested to reset your password.</p>
+          <p>Click the link below to set a new password:</p>
+          <a href="${resetURL}">${resetURL}</a>
+          <p>This link expires in 1 hour.</p>
+        `,
+      });
+    } catch (err) {
+      console.error("SendGrid error:", err);
+      return res.status(500).json({
+        success: false,
+        message: "Failed to send password reset email. Please try again later.",
+      });
+    }
 
     res.json({ success: true, message: "Password reset email sent" });
   } catch (error) {
