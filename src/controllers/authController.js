@@ -143,10 +143,15 @@ const adminCreateUser = async (req, res) => {
 
     // Send email with the generated password
     const transporter = nodemailer.createTransport({
-      service: "gmail", // adjust if using a custom SMTP
+      host: process.env.SMTP_HOST,
+      port: Number(process.env.SMTP_PORT),
+      secure: process.env.SMTP_SECURE === "true",
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
+      },
+      tls: {
+        rejectUnauthorized: false,
       },
     });
 
@@ -437,10 +442,15 @@ const forgotPassword = async (req, res) => {
 
     // Email setup (use your SMTP settings)
     const transporter = nodemailer.createTransport({
-      service: "gmail", // or your email service
+      host: process.env.SMTP_HOST,
+      port: Number(process.env.SMTP_PORT),
+      secure: process.env.SMTP_SECURE === "true",
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
+      },
+      tls: {
+        rejectUnauthorized: false,
       },
     });
 
